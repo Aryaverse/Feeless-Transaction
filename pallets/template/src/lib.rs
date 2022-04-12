@@ -90,8 +90,9 @@ pub mod pallet {
 				user_calls = 0;
 			}
 
+			ensure!(user_calls < max_calls , Error::<T>::ExceedMaxCalls);
+
 			// Check that the user has an available free call
-			if user_calls < max_calls {
 				// Update the tracker count.
 				Tracker::<T>::insert(
 					&sender,
@@ -114,19 +115,7 @@ pub mod pallet {
 				// );
 
 				// Make the tx feeless!
-				return Ok(Pays::No.into()) // 
-			} else {
-				// They do not have enough feeless txs, so we charge them
-				// for the reads.
-				//
-				// Note: This could be moved into a signed extension check to
-				// avoid charging them any fees at all in any situation.
-
-				// Function returns a calculation corresponding to 3 DB reads: weights consumed if the user couldn't get a free txn [i.e. if s/he fails the if case for user_calls < max_calls]
-				let check_logic_weight = T::DbWeight::get().reads(3);
-				// Return the reduced weight: Charge the user with the fee equivalent to weight of 3 storage reads
-				return Ok(Some(check_logic_weight).into())
-			}
+				return Ok(Pays::No.into()); // 
 		}
 	}
 }
